@@ -56,8 +56,10 @@ int main(){
         if(windowsCount == 1 && !barIsRunning){
             barIsRunning = true;
             std::cout << "Cutefish statusbar has been restarted."  << std::endl;
-            system("bash -c \"pkill cutefish-status ; cutefish-statusbar &\"");
+            //system("bash -c \"pkill cutefish-status ; cutefish-statusbar &\"");
             
+            
+            system("bash -c \"xdo raise -N \"cutefish-statusbar\" -t $(xdo id -N Bspwm -n root)\"");
         } else if (windowsCount == 0) 
             barIsRunning = false;
         
