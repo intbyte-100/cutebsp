@@ -46,24 +46,21 @@ int usageLnCount(std::string &text){
  
 int main(){	
     std::cout << "Demon has been started\nTo stop it press \"Ctrl+c\".\n" << std::endl;
-    bool barIsRunning = false;
+    bool barIsAbove = false;
 
     while(true){
-        auto output = execCmd("wmctrl -l");
-
-        int windowsCount = usageLnCount(output);
-
-        if(windowsCount == 1 && !barIsRunning){
-            barIsRunning = true;
-            std::cout << "Cutefish statusbar has been restarted."  << std::endl;
-            //system("bash -c \"pkill cutefish-status ; cutefish-statusbar &\"");
-            
-            
-            system("bash -c \"xdo raise -N \"cutefish-statusbar\" -t $(xdo id -N Bspwm -n root)\"");
-        } else if (windowsCount == 0) 
-            barIsRunning = false;
+        auto output = execCmd("bspc query -T -n $somenode | jq -r '.client.state'");
         
-        usleep(500);
+        if(output == "tiled\n" && !barIsAbove){
+            system("xdo raise -N cutefish-statusbar -t $(xdo id -N Bspwm -n root)");
+            barIsAbove = true;
+        } else if (output == "fullscreen\n" && barIsAbove){
+            system("xdo above -N cutefish-statusbar -t $(xdo id -N Bspwm -n root)");
+            barIsAbove = false;
+        }
+
+        
+        usleep(1000);
     }
 
     return 0;
