@@ -1,3 +1,5 @@
+#include "ShellInputStream.h"
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,62 +7,24 @@
 #include <vector>
 #include <unistd.h>
 
-std::string execCmd(std::string cmd) {
-
-  std::string data;
-  FILE * stream;
-  const int max_buffer = 256;
-  char buffer[max_buffer];
-  cmd.append(" 2>&1");
-
-  stream = popen(cmd.c_str(), "r");
-  if (stream) {
-    while (!feof(stream))
-      if (fgets(buffer, max_buffer, stream) != NULL) data.append(buffer);
-    pclose(stream);
-  }
-  return data;
-}
-
-std::vector<std::string> split(std::string &text, std::string &delimiter){
-    std::vector<std::string> words;
-
-    size_t pos;
-    while ((pos = text.find(delimiter)) != std::string::npos) {
-        words.push_back(text.substr(0, pos));
-        text.erase(0, pos + delimiter.length());
-    }
-    return words;
-}
 
 
-int usageLnCount(std::string &text){
-    int count = 0;
-    auto str = text.c_str();
-    for(int i = 0; i < text.size(); i++)
-        if(str[i] == '\n')
-            count++;
-    return count;
-}
-
- 
 int main(){	
     std::cout << "Demon has been started\nTo stop it press \"Ctrl+c\".\n" << std::endl;
     bool barIsAbove = false;
 
-    while(true){
-        auto output = execCmd("bspc query -T -n $somenode | jq -r '.client.state'");
-        
-        if(output == "tiled\n" && !barIsAbove){
-            system("xdo raise -N cutefish-statusbar -t $(xdo id -N Bspwm -n root)");
-            barIsAbove = true;
-        } else if (output == "fullscreen\n" && barIsAbove){
-            system("xdo above -N cutefish-statusbar -t $(xdo id -N Bspwm -n root)");
-            barIsAbove = false;
-        }
+    std::string cmd("bspc subscribe");
+    ShellInputStream stream(cmd);
 
-        
-        usleep(1000);
+    while (true) {
+        auto str = stream.nextString();
+        if(str[str.length()-3] == '='){
+            system("xdo lower -N cutefish-statusbar -t $(xdo id -N Bspwm -n root)");
+            std::cout << "the status bar was move to below" << std::endl;
+        } else {
+            system("xdo raise -N cutefish-statusbar -t $(xdo id -N Bspwm -n root)");
+            std::cout << "the status bar was move to above" << std::endl;
+        }
     }
 
     return 0;

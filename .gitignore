@@ -32,4 +32,5 @@
 *.app
 
 src/build/
+build-src-Desktop-Release
 run
